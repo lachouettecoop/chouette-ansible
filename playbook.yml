@@ -1,0 +1,35 @@
+---
+- name: Installation du serveur
+  hosts: web
+  remote_user: root
+  vars:
+    user: chouette
+    configured_port: 50251
+    ansible_port: 22
+    inventory_hostname: vps483554.ovh.net
+
+  roles:
+      #- sshport
+      - { role: "nickjj.docker", tags: "docker" }
+      #- docker
+
+  tasks:
+      - name: Intall et update
+        apt: name="git" update_cache=yes
+      - name: Installation des premier packages
+        apt: name={{ item }} state=latest
+        with_items:
+          - nano
+          - dnsutils
+          - unzip
+
+      - name: Ajout d'un user
+        user: name={{user}} comment="moi" shell=/usr/bin/zsh
+      - authorized_key: user={{user}} key="{{ lookup('file', lookup('env','HOME') + '/.ssh/id_rsa.pub') }}"
+      - name: "{{user}} devient sudoer"
+        when: user is defined
+        template: src=templates/sudoers.j2 dest=/etc/sudoers.d/{{user}}-sudoer validate='visudo -cf %s'
+      - name: Changer le port ssh
+        user: name={{user}} comment="moi" shell=/usr/bin/zsh
+
+...
