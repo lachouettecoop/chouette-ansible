@@ -6,7 +6,6 @@ host_user: "{{ hedwige_srv_user }}"
 # Encryped password
 host_password: "{{ hedwige_srv_pass }}"
 # Clear Password
-ansible_ssh_pass: "{{ hedwige_srv_pass }}"
 ansible_sudo_pass: "{{ hedwige_srv_pass }}"
 
 ## Odoo configuration

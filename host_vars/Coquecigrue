@@ -6,7 +6,6 @@ host_user: "{{ coquecigrue_srv_user }}"
 # Encryped password
 host_password: "{{ coquecigrue_srv_pass }}"
 # Clear Password
-ansible_ssh_pass: "{{ coquecigrue_srv_pass }}"
 ansible_sudo_pass: "{{ coquecigrue_srv_pass }}"
 
 ## Odoo configuration

@@ -13,11 +13,6 @@
 -A INPUT -p icmp --icmp-type echo-request -j ACCEPT
 # SSH
 -A INPUT -p tcp -m tcp --dport {{ ansible_ssh_port }} -j ACCEPT
-# WEB 
-{% if nginx_enabled is defined %}
--A INPUT -p tcp -m tcp --dport 80 -j ACCEPT
--A INPUT -p tcp -m tcp --dport 443 -j ACCEPT
-{% endif %}
 # DNS
 -A INPUT -p tcp -m tcp --dport 53 -j ACCEPT
 -A INPUT -p udp -m udp --dport 53 -j ACCEPT
@@ -49,10 +44,6 @@
 -A OUTPUT -p tcp -m tcp --dport 43 -j ACCEPT
 # DHCP
 -A OUTPUT -p udp -m udp --dport 67 -j ACCEPT
-{% if inventory_hostname in groups['odoo_server'] %}
-# IMAP
--A OUTPUT -p tcp -m tcp --dport 993 -j ACCEPT
-{% endif %}
 # Log outgoing traffic blocked by IPTables
 -A OUTPUT -j LOGGING
 ## LOGGING chain
