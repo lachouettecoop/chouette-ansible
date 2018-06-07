@@ -1,0 +1,32 @@
+## Ansible configuration for connecting to remote host
+# IP address
+ansible_ssh_host: "{{ hedwige_srv_ip }}"
+# User
+host_user: "{{ hedwige_srv_user }}"
+# Encryped password
+host_password: "{{ hedwige_srv_pass }}"
+# Clear Password
+ansible_ssh_pass: "{{ hedwige_srv_pass }}"
+ansible_sudo_pass: "{{ hedwige_srv_pass }}"
+
+## Odoo configuration
+# URL for setting certificate
+OE_URL: "{{ hedwige_srv_url }}" 
+
+# Odoo version and daemon name
+OE_VERSION: "10.0"
+OE_DAEMON: "odoo-bin"
+
+# Odoo Master password
+OE_SUPERADMIN: "{{ hedwige_odoo_master_pass }}"
+
+# Custom modules
+OE_CUSTOM:
+
+## OwnCloud configuration
+# URL for Owncloud
+#cloud_url: "{{ hedwige_owncloud_url }}"
+# PostgreSQL password for Owncloud
+#cloud_pg_hash: "{{ hedwige_owncloud_pg_hash }}"
+# Data directory for Owncloud
+#cloud_data_dir: "{{ hedwige_owncloud_data_dir }}"
