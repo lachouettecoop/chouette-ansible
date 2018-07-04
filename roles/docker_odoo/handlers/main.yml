@@ -1,0 +1,21 @@
+---
+
+- name: rebuild odoo docker prod
+  docker_service:
+    project_src: "{{ docker_location }}odoo/"
+    build: no
+    nocache: no
+    pull: no
+    restarted: yes
+  async: 600
+  poll: 10
+
+- name: rebuild odoo docker test
+  docker_service:
+    project_src: "{{ docker_location }}odootest/"
+    build: yes
+    nocache: yes
+    pull: no
+    restarted: yes
+  async: 600
+  poll: 10

@@ -1,0 +1,44 @@
+---
+
+- name: Create docker ldap repo
+  file:
+    name: "{{ docker_location }}auth/ldap/ldif"
+    state: directory
+    owner: root
+    group: root
+
+
+## Install LDAP docker
+- name: Install LDAP docker architecture
+  template:
+    src: docker-compose.yaml.j2
+    dest: "{{ docker_location }}auth/docker-compose.yaml"
+    owner: root
+    group: root
+    mode: 0400
+
+- name: Install LDAP docker file
+  copy:
+    src: Dockerfile
+    dest: "{{ docker_location }}auth/ldap/Dockerfile"
+    owner: root
+    group: root
+    mode: 0400
+
+- name: Install LDIF files
+  copy:
+    src: "{{ item }}"
+    dest: "{{ docker_location }}auth/ldap/ldif/{{ item }}"
+    owner: root
+    group: root
+    mode: 0400
+  with_items :
+    - 01-ppolicy.ldif
+    - 02-password_policy_config.ldif
+
+- name: start ldap docker
+  docker_service:
+    project_src: "{{ docker_location }}auth"
+  async: 120
+  poll: 10
+  tags: start_docker

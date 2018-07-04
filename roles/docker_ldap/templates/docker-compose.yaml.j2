@@ -1,0 +1,89 @@
+version: '2'
+services:
+  openldap:
+    build:
+      context: ldap/
+    image: filament/openldap
+    container_name: openldap
+    environment:
+      LDAP_LOG_LEVEL: "256"
+      LDAP_ORGANISATION: "{{ ldap_org }}"
+      LDAP_DOMAIN: "{{ ldap_domain }}"
+      LDAP_BASE_DN: "{{ ldap_base_dn }}"
+      LDAP_ADMIN_PASSWORD: "{{ ldap_admin_pass }}"
+      LDAP_CONFIG_PASSWORD: "{{ ldap_config_pass }}"
+      LDAP_READONLY_USER: "true"
+      LDAP_READONLY_USER_USERNAME: "readonly"
+      LDAP_READONLY_USER_PASSWORD: "{{ ldap_readonly_pass }}"
+      LDAP_RFC2307BIS_SCHEMA: "false"
+      LDAP_BACKEND: "mdb"
+      LDAP_TLS: "true"
+      LDAP_TLS_CRT_FILENAME: "ldap.crt"
+      LDAP_TLS_KEY_FILENAME: "ldap.key"
+      LDAP_TLS_CA_CRT_FILENAME: "ca.crt"
+      LDAP_TLS_ENFORCE: "false"
+      LDAP_TLS_CIPHER_SUITE: "SECURE256:-VERS-SSL3.0"
+      LDAP_TLS_PROTOCOL_MIN: "3.1"
+      LDAP_TLS_VERIFY_CLIENT: "demand"
+      LDAP_REPLICATION: "false"
+      #LDAP_REPLICATION_CONFIG_SYNCPROV: "binddn="cn=admin,cn=config" bindmethod=simple credentials=$LDAP_CONFIG_PASSWORD searchbase="cn=config" type=refreshAndPersist retry="60 +" timeout=1 starttls=critical"
+      #LDAP_REPLICATION_DB_SYNCPROV: "binddn="cn=admin,$LDAP_BASE_DN" bindmethod=simple credentials=$LDAP_ADMIN_PASSWORD searchbase="$LDAP_BASE_DN" type=refreshAndPersist interval=00:00:00:10 retry="60 +" timeout=1 starttls=critical"
+      #LDAP_REPLICATION_HOSTS: "#PYTHON2BASH:['ldap://ldap.example.org','ldap://ldap2.example.org']"
+      KEEP_EXISTING_CONFIG: "false"
+      LDAP_REMOVE_CONFIG_AFTER_SETUP: "true"
+      LDAP_SSL_HELPER_PREFIX: "ldap"
+    tty: true
+    stdin_open: true
+    volumes:
+      - db:/var/lib/ldap
+      - config:/etc/ldap/slapd.d
+      - certs:/container/service/slapd/assets/certs/
+    domainname: "{{ ldap_domain }}" # important: same as hostname
+    hostname: "{{ ldap_domain }}"
+    networks:
+      default:
+
+  phpldapadmin:
+    image: osixia/phpldapadmin:latest
+    container_name: phpldapadmin
+    environment:
+      PHPLDAPADMIN_LDAP_HOSTS: "openldap"
+      PHPLDAPADMIN_HTTPS: "false"
+    depends_on:
+      - openldap
+    networks:
+      default:
+      inverseproxy_shared:
+    labels:
+      traefik.docker.network: "inverseproxy_shared"
+      traefik.enable: "true"
+      traefik.frontend.passHostHeader: "true"
+      traefik.port: "80"
+      traefik.own.frontend.rule: "Host:{{ ldap_url }}"
+
+  sso:
+    image: apereo/cas:v5.2.2
+    container_name: sso
+    depends_on:
+      - openldap
+    networks:
+      default:
+      inverseproxy_shared:
+    labels:
+      traefik.docker.network: "inverseproxy_shared"
+      traefik.enable: "true"
+      traefik.frontend.passHostHeader: "true"
+      traefik.port: "8080"
+      traefik.own.frontend.rule: "Host:{{ ldap_sso_url }}"
+
+networks:
+    default:
+        driver_opts:
+            encrypted: 1
+    inverseproxy_shared:
+        external: true
+
+volumes:
+    db:
+    config:
+    certs:

@@ -2,6 +2,8 @@
 
 - name: install mailutils
   package: name=mailutils state=present
+  async: 120
+  poll: 10
   when: ansible_os_family == "Debian"
 
 - name: install mailx
@@ -28,6 +30,7 @@
   notify: 
     - restore-iptables
     - restart fail2ban
+    - restart docker
 
 - name: make iptables configuration persistent
   lineinfile:

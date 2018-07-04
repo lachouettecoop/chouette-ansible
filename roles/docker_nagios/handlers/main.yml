@@ -1,0 +1,8 @@
+---
+
+- name: restart nagios docker
+  docker_service:
+    project_src: "{{ docker_location }}nagios/"
+    files: nagios.yaml
+    restarted: yes
+

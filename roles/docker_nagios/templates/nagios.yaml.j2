@@ -1,0 +1,26 @@
+version: '3'
+
+services:
+  nagios:
+    image: jasonrivers/nagios:latest 
+    restart: unless-stopped
+    volumes:
+      - ./custom:/opt/nagios/libexec/custom
+      - ./etc:/opt/nagios/etc/
+      - ./stylesheets:/opt/nagios/share/stylesheets/
+    networks:
+      default:
+      inverseproxy_shared:
+    labels:
+      traefik.docker.network: "inverseproxy_shared"
+      traefik.enable: "true"
+      traefik.frontend.passHostHeader: "true"
+      traefik.port: "80"
+      traefik.own.frontend.rule: "Host:{{ nagios_url }}"
+
+networks:
+    default:
+        driver_opts:
+            encrypted: 1
+    inverseproxy_shared:
+        external: true

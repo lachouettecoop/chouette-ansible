@@ -8,6 +8,12 @@ host_password: "{{ hedwige_srv_pass }}"
 # Clear Password
 ansible_sudo_pass: "{{ hedwige_srv_pass }}"
 
+
+## Docker configuration
+# Location of dockers
+docker_location: "/home/chouette/docker/"
+
+
 ## Odoo configuration
 # URL for setting certificate
 OE_URL: "{{ hedwige_srv_url }}" 

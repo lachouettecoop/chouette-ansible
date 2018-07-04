@@ -1,0 +1,113 @@
+---
+
+## Install Odoo docker test
+- name: TEST create Odoo docker structure on server in {{ docker_location }}odootest
+  file:
+    name: "{{ item }}"
+    state: directory
+    owner: root
+    group: root
+  with_items:
+  - "{{ docker_location }}odootest/odoo/custom/build.d"
+  - "{{ docker_location }}odootest/odoo/custom/dependencies"
+  - "{{ docker_location }}odootest/odoo/custom/src/"
+  tags: odoo_test
+
+- name: TEST create link for src towards custom src
+  file:
+    name: "{{ docker_location }}odootest/src"
+    state: link
+    src: "{{ docker_location }}odootest/odoo/custom/src"
+  tags: odoo_test
+
+- name: TEST copy test docker compose service
+  template:
+    src: test.yaml.j2
+    dest: "{{ docker_location }}odootest/docker-compose.yml"
+    owner: root
+    group: root
+    mode: 0400
+  tags: odoo_test
+  
+- name: TEST copy call for Tecnativa docker image 
+  copy:
+    src: Dockerfile-odoo
+    dest: "{{ docker_location }}odootest/odoo/Dockerfile"
+    owner: root
+    group: root
+    mode: 0644 
+  tags: odoo_test
+
+- name: TEST set repos variables from template
+  template:
+    src: repos.yaml.j2
+    dest: "{{ docker_location }}odootest/odoo/custom/src/repos.yaml"
+    owner: root
+    group: root
+    mode: 0644 
+  notify: rebuild odoo docker test
+  tags: odoo_test
+
+- name: TEST set addons variables from template
+  template:
+    src: addons.yaml.j2
+    dest: "{{ docker_location }}odootest/odoo/custom/src/addons.yaml"
+    owner: root
+    group: root
+    mode: 0644
+  notify: rebuild odoo docker test
+  tags: odoo_test
+
+- name: TEST copy pip extra requirements file
+  copy:
+    src: pip.txt
+    dest: "{{ docker_location }}odootest/odoo/custom/dependencies/pip.txt"
+    owner: root
+    group: root
+    mode: 0644
+  notify: rebuild odoo docker test
+  tags: odoo_test
+
+- name: TEST copy compose file to restore db from prod
+  template:
+    src: restore-odootest.yaml.j2
+    dest: "{{ docker_location }}backups/restore-odootest.yaml"
+    owner: root
+    group: root
+    mode: 0400
+  tags: odoo_test
+
+## Install Odoo prod docker
+- name: PROD create Odoo docker structure on server in {{ docker_location }}odoo
+  file:
+    name: "{{ docker_location }}odoo"
+    state: directory
+    owner: root
+    group: root
+  tags: odoo_prod
+
+- name: PROD copy prod docker compose service
+  template:
+    src: prod.yaml.j2
+    dest: "{{ docker_location }}odoo/docker-compose.yml"
+    owner: root
+    group: root
+    mode: 0400
+  tags: odoo_prod
+
+- name: PROD copy docker compose for backups
+  template:
+    src: backup.yaml.j2
+    dest: "{{ docker_location }}backups/backup-odoo.yaml"
+    owner: root
+    group: root
+    mode: 0400
+  tags: odoo_prod
+
+- name: PROD add cron job to run backup every day
+  cron:
+    name: backup odoo
+    minute: 03
+    hour: 2
+    job: mount {{ docker_location }}backups/odoo && /usr/local/bin/docker-compose -f {{ docker_location }}backups/backup-odoo.yaml run --rm backup_odoo && umount {{ docker_location }}backups/odoo
+  tags: odoo_prod

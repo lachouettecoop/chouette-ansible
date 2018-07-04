@@ -4,3 +4,6 @@ servers
 [servers]
 Hedwige
 Coquecigrue
+
+[docker]
+Coquecigrue

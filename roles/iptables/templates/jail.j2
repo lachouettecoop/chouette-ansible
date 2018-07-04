@@ -308,18 +308,11 @@ logpath = %(apache_error_log)s
 maxretry = 1
 
 [nginx-http-auth]
-{% if nginx_enabled is defined %}
-enabled	= true
-{% else %}
 
-{% endif %}
 port    = http,https
 logpath = %(nginx_error_log)s
 
 [nginx-botsearch]
-{% if nginx_enabled is defined %}
-enabled	= true
-{% endif %}
 port     = http,https
 logpath  = %(nginx_error_log)s
 maxretry = 2
@@ -502,17 +495,11 @@ logpath  = %(syslog_mail)s
 
 [postfix]
 
-{% if inventory_hostname_short == "mail" %}
-enabled = true
-{% endif %}
 port     = smtp,465,submission
 logpath  = /var/log/mail.log
 
 
 [postfix-rbl]
-{% if inventory_hostname_short == "mail" %}
-enabled = true
-{% endif %}
 
 port     = smtp,465,submission
 logpath  = %(syslog_mail)s
@@ -521,18 +508,12 @@ maxretry = 1
 
 [sendmail-auth]
 
-{% if inventory_hostname_short == "mail" %}
-enabled = true
-{% endif %}
 port    = submission,465,smtp
 logpath = %(syslog_mail)s
 
 
 [sendmail-reject]
 
-{% if inventory_hostname_short == "mail" %}
-enabled = true
-{% endif %}
 port     = smtp,465,submission
 logpath  = %(syslog_mail)s
 
@@ -554,9 +535,6 @@ logpath = %(dovecot_log)s
 
 [sieve]
 
-{% if inventory_hostname_short == "mail" %}
-enabled = true
-{% endif %}
 port   = smtp,465,submission
 logpath = %(dovecot_log)s
 
@@ -598,9 +576,6 @@ logpath  = %(syslog_mail)s
 
 [postfix-sasl]
 
-{% if inventory_hostname_short == "mail" %}
-enabled = true
-{% endif %}
 port     = smtp,465,submission,imap3,imaps,pop3,pop3s
 # You might consider monitoring /var/log/mail.warn instead if you are
 # running postfix since it would provide the same log lines at the
@@ -622,9 +597,6 @@ logpath = /var/lib/squirrelmail/prefs/squirrelmail_access_log
 
 [cyrus-imap]
 
-{% if inventory_hostname_short == "mail" %}
-enabled = true
-{% endif %}
 port   = imap3,imaps
 logpath = %(syslog_mail)s
 

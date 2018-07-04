@@ -8,6 +8,12 @@ host_password: "{{ coquecigrue_srv_pass }}"
 # Clear Password
 ansible_sudo_pass: "{{ coquecigrue_srv_pass }}"
 
+
+## Docker configuration
+# Location of dockers
+docker_location: "/mnt/"
+
+
 ## Odoo configuration
 # URL for setting certificate
 OE_URL: "{{ coquecigrue_srv_url }}" 

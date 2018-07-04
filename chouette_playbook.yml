@@ -14,17 +14,35 @@
   roles:
   - { role: init_server, tags: init }
 
-- hosts: odoo_server
-  gather_facts: no
-  become: yes
-  roles: 
-  - { role: odoo_server, tags: odoo }
-
-- hosts: owncloud_server
+- hosts: docker
   gather_facts: no
   become: yes
   roles:
-  - { role: owncloud, tags: owncloud } 
+  - { role: docker_server, tags: docker }
+
+- hosts: docker_ldap
+  gather_facts: no
+  become: yes
+  roles:
+  - { role: docker_ldap, tags: docker_ldap }
+
+- hosts: docker_odoo
+  gather_facts: no
+  become: yes
+  roles:
+  - { role: docker_odoo, tags: docker_odoo }
+
+- hosts: docker_owncloud
+  gather_facts: no
+  become: yes
+  roles:
+  - { role: docker_owncloud, tags: docker_owncloud }
+
+- hosts: docker_nagios
+  gather_facts: no
+  become: yes
+  roles:
+  - { role: docker_nagios, tags: docker_nagios }
 
 - hosts: all
   gather_facts: no
