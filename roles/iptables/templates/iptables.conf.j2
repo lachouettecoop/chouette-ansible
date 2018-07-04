@@ -18,6 +18,8 @@
 -A INPUT -p udp -m udp --dport 53 -j ACCEPT
 # DHCP
 -A INPUT -p udp -m udp --dport 68 -j ACCEPT
+# NRPE
+-A INPUT -s 51.254.216.36 -p tcp -m tcp --dport 5666 -m state --state NEW,ESTABLISHED -j ACCEPT
 # Log incoming traffic blocked by IPTables
 -A INPUT -j LOGGING
 ## OUTPUT chain
