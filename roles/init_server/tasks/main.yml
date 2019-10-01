@@ -6,7 +6,28 @@
     upgrade: full
     autoremove: yes
     force: yes
+    install_recommends: no
   when: ansible_os_family == "Debian"
+
+- name: Remove unecessary Samba packages
+  apt:
+    name: samba*
+    autoremove: yes
+    state: absent
+  when: ansible_os_family == "Debian"
+
+- name: Remove potentially harmfull unattended-upgrades
+  apt:
+    name: unattended-upgrades
+    autoremove: yes
+    state: absent
+  when: ansible_distribution == "Ubuntu"
+
+- name: Remove unecessary samba hooks
+  file:
+    name: /etc/dhcp/dhclient-enter-hooks.d/samba
+    state: absent
+  when:  ansible_os_family == "Debian"
 
 - name: Update repo and upgrade installed packages
   yum:
@@ -23,9 +44,10 @@
   user:
     name: "{{ host_user }}"
     group: "{{ host_user }}"
-    password: "{{ host_password | password_hash('sha512') }}"
+    password: "{{ host_password | password_hash('sha512', 65534 | random(seed=inventory_hostname) | string) }}"
     generate_ssh_key: yes
     shell: /bin/bash
+  register: publickey
 
 - name: add user in sudoers
   lineinfile:
@@ -41,42 +63,18 @@
     - "{{ depl_ssh_pubkeys }}"
   tags: sshd
 
-- name: Disable access with dsa key
-  lineinfile: 
-    name: /etc/ssh/sshd_config
-    regexp: "HostKey /etc/ssh/ssh_host_dsa_key"
-    line: "#HostKey /etc/ssh/ssh_host_dsa_key"
-  notify: restart-sshd
-  tags: sshd
-
-- name: Disable access with ecdsa key
-  lineinfile: 
-    name: /etc/ssh/sshd_config
-    regexp: "HostKey /etc/ssh/ssh_host_ecdsa_key"
-    line: "#HostKey /etc/ssh/ssh_host_ecdsa_key"
-  notify: restart-sshd
-  tags: sshd
-
-- name: Disable access with password, use key only
-  lineinfile: 
-    name: /etc/ssh/sshd_config
-    regexp: "HostKey /etc/ssh/ssh_host_ed25519_key"
-    line: "#HostKey /etc/ssh/ssh_host_ed25519_key"
-  notify: restart-sshd
-  tags: sshd
-
 - name: configure sshd port
   lineinfile:
     name: /etc/ssh/sshd_config
-    regexp: "^Port"
-    line: "Port {{ ansible_ssh_port }}"
+    regexp: "^#?Port"
+    line: "Port {{ default_sshd_port }}"
   notify: restart-sshd
   tags: sshd
 
 - name: Disable ssh root login
   lineinfile:
     name: /etc/ssh/sshd_config
-    regexp: "^PermitRootLogin"
+    regexp: "^#?PermitRootLogin"
     line: "PermitRootLogin no"
   notify: restart-sshd
   tags: sshd
@@ -84,15 +82,72 @@
 - name: Disable access with password, use key only
   lineinfile: 
     name: /etc/ssh/sshd_config
-    regexp: "^PasswordAuthentication"
+    regexp: "^#?PasswordAuthentication"
     line: "PasswordAuthentication no"
+  notify: restart-sshd
+  tags: sshd
+
+- name: Disable Agent Forwarding
+  lineinfile:
+    name: /etc/ssh/sshd_config
+    regexp: "^#?AllowAgentForwarding"
+    line: "AllowAgentForwarding no"
+  notify: restart-sshd
+  tags: sshd
+
+- name: Disable TCP Forwarding
+  lineinfile:
+    name: /etc/ssh/sshd_config
+    regexp: "^#?AllowTcpForwarding"
+    line: "AllowTcpForwarding no"
+  notify: restart-sshd
+  tags: sshd
+
+- name: Disable X11 Forwarding
+  lineinfile:
+    name: /etc/ssh/sshd_config
+    regexp: "^#?X11Forwarding"
+    line: "X11Forwarding no"
   notify: restart-sshd
   tags: sshd
 
 - name: Enable ssh connection for {{ host_user }} only
   lineinfile:
     name: /etc/ssh/sshd_config
-    regexp: "^AllowUsers"
+    regexp: "^#?AllowUsers"
     line: "AllowUsers {{ host_user }}"
   notify: restart-sshd
   tags: sshd
+
+- name: Add session timeout
+  blockinfile:
+    path: /etc/bash.bashrc
+    block: |
+      TMOUT=900
+      readonly TMOUT
+      export TMOUT
+  when: ansible_os_family == "Debian"
+
+- name: Add session timeout
+  blockinfile:
+    path: /etc/bashrc
+    block: |
+      TMOUT=900
+      readonly TMOUT
+      export TMOUT
+  when: ansible_os_family == "RedHat"
+
+- name: Copy Installed Package Listing script on server
+  template:
+    src: collect_installed_packages_facts_{{ ansible_os_family }}.sh.j2
+    dest: /root/collect_installed_packages_facts.sh
+    owner: root
+    group: root
+    mode: 0700
+
+- name: add cron job to check installed packages every day
+  cron:
+    name: collect installed packages facts
+    minute: 43
+    hour: 0
+    job: /root/collect_installed_packages_facts.sh

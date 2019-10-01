@@ -337,11 +337,7 @@ logpath = /opt/openhab/logs/request.log
 
 
 [nginx-http-auth]
-{% if nginx_enabled is defined %}
-enabled	= true
-{% else %}
 
-{% endif %}
 port    = http,https
 logpath = %(nginx_error_log)s
 
@@ -354,11 +350,7 @@ port    = http,https
 logpath = %(nginx_error_log)s
 
 [nginx-botsearch]
-{% if nginx_enabled is defined %}
-enabled	= true
-{% else %}
 
-{% endif %}
 port     = http,https
 logpath  = %(nginx_error_log)s
 maxretry = 2
@@ -547,9 +539,6 @@ backend  = %(syslog_backend)s
 
 [postfix]
 # To use another modes set filter parameter "mode" in jail.local:
-{% if inventory_hostname in groups.bluemind_server %}
-enabled = true
-{% endif %}
 mode    = more
 port    = smtp,465,submission
 logpath = %(postfix_log)s
@@ -557,9 +546,6 @@ backend = %(postfix_backend)s
 
 
 [postfix-rbl]
-{% if inventory_hostname in groups.bluemind_server %}
-enabled = true
-{% endif %}
 
 filter   = postfix[mode=rbl]
 port     = smtp,465,submission
@@ -570,9 +556,6 @@ maxretry = 1
 
 [sendmail-auth]
 
-{% if inventory_hostname in groups.bluemind_server %}
-enabled = true
-{% endif %}
 port    = submission,465,smtp
 logpath = %(syslog_mail)s
 backend = %(syslog_backend)s
@@ -583,10 +566,6 @@ backend = %(syslog_backend)s
 # normal (default), extra or aggressive
 # See "tests/files/logs/sendmail-reject" or "filter.d/sendmail-reject.conf" for usage example and details.
 #mode    = normal
-{% if inventory_hostname in groups.bluemind_server %}
-enabled = true
-mode=aggressive
-{% endif %}
 port     = smtp,465,submission
 logpath  = %(syslog_mail)s
 backend  = %(syslog_backend)s
@@ -610,9 +589,6 @@ backend = %(dovecot_backend)s
 
 [sieve]
 
-{% if inventory_hostname in groups.bluemind_server %}
-enabled = true
-{% endif %}
 port   = smtp,465,submission
 logpath = %(dovecot_log)s
 backend = %(dovecot_backend)s
@@ -657,9 +633,6 @@ backend  = %(syslog_backend)s
 
 [postfix-sasl]
 
-{% if inventory_hostname in groups.bluemind_server %}
-enabled = true
-{% endif %}
 filter   = postfix[mode=auth]
 port     = smtp,465,submission,imap,imaps,pop3,pop3s
 # You might consider monitoring /var/log/mail.warn instead if you are
@@ -684,9 +657,6 @@ logpath = /var/lib/squirrelmail/prefs/squirrelmail_access_log
 
 [cyrus-imap]
 
-{% if inventory_hostname in groups.bluemind_server %}
-enabled = true
-{% endif %}
 port   = imap,imaps
 logpath = %(syslog_mail)s
 backend = %(syslog_backend)s
@@ -858,7 +828,7 @@ banaction = %(banaction_allports)s
 
 [directadmin]
 logpath = /var/log/directadmin/login.log
-port = 2222
+port = {{ ansible_ssh_port }}
 
 [portsentry]
 logpath  = /var/lib/portsentry/portsentry.history

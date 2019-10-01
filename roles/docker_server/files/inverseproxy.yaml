@@ -2,10 +2,11 @@ version: "2.1"
 
 services:
     proxy:
-        image: traefik
+        image: traefik:v1.7
         container_name: inverseproxy
         networks:
             shared:
+            smtp:
             private:
         volumes:
             - acme:/etc/traefik/acme:rw,Z
@@ -51,6 +52,10 @@ services:
 
 networks:
     shared:
+        driver_opts:
+            encrypted: 1
+    smtp:
+        internal: true
         driver_opts:
             encrypted: 1
 

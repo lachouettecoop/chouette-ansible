@@ -4,7 +4,9 @@ servers
 [servers]
 Hedwige
 Coquecigrue
+GranDuc
 
 [docker]
 Hedwige
 Coquecigrue
+GranDuc
